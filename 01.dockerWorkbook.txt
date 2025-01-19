@@ -1,0 +1,827 @@
+🚀 busybox & alpine
+
+ibtisam@mint-dell:~$ docker run -it --name con1 busybox 
+/ # uname -a
+Linux b4dd6aca6a27 6.6.32-linuxkit #1 SMP PREEMPT_DYNAMIC Thu Jun 13 14:14:43 UTC 2024 x86_64 GNU/Linux
+/ # cat /etc/os-release
+cat: can't open '/etc/os-release': No such file or directory
+/ # neofetch
+sh: neofetch: not found
+
+ibtisam@mint-dell:~$ docker run -it --name con2 alpine
+Linux 32365ae0d4c4 6.6.32-linuxkit #1 SMP PREEMPT_DYNAMIC Thu Jun 13 14:14:43 UTC 2024 x86_64 Linux
+/ # neofetch
+/bin/sh: neofetch: not found
+/ # cat /etc/os-release
+NAME="Alpine Linux"
+ID=alpine
+VERSION_ID=3.20.2
+PRETTY_NAME="Alpine Linux v3.20"
+HOME_URL="https://alpinelinux.org/"
+BUG_REPORT_URL="https://gitlab.alpinelinux.org/alpine/aports/-/issues"
+/ # exit
+
+ibtisam@mint-dell:~$ docker ps -a
+CONTAINER ID   IMAGE     COMMAND     CREATED          STATUS                      PORTS     NAMES
+32365ae0d4c4   alpine    "/bin/sh"   38 minutes ago   Exited (0) 37 seconds ago             con2
+b4dd6aca6a27   busybox   "sh"        45 minutes ago   Up 45 minutes                         con1
+ibtisam@mint-dell:~$ docker start con2
+con2
+ibtisam@mint-dell:~$ docker ps -a
+CONTAINER ID   IMAGE     COMMAND     CREATED          STATUS          PORTS     NAMES
+32365ae0d4c4   alpine    "/bin/sh"   38 minutes ago   Up 5 seconds              con2
+b4dd6aca6a27   busybox   "sh"        45 minutes ago   Up 45 minutes             con1
+ibtisam@mint-dell:~$ docker exec con2
+"docker exec" requires at least 2 arguments.
+See 'docker exec --help'.
+
+Usage:  docker exec [OPTIONS] CONTAINER COMMAND [ARG...]
+
+Execute a command in a running container
+ibtisam@mint-dell:~$ docker exec con2 /bin/sh
+ibtisam@mint-dell:~$ docker exec -it con2 /bin/sh
+/ # 
+/ # exit
+ibtisam@mint-dell:~$ docker exec con2 ls 	<media,mnt,opt,run,sbin,srv> not present in busybox
+bin
+dev
+etc
+home
+lib
+media
+mnt
+opt
+proc
+root
+run
+sbin
+srv
+sys
+tmp
+usr
+var
+ibtisam@mint-dell:~$
+
+ibtisam@mint-dell:~$ docker exec -it con2 ls
+bin    dev    etc    home   lib    media  mnt    opt    proc   root   run    sbin   srv    sys    tmp    usr    var
+ibtisam@mint-dell:~$ docker exec -it con2 /bin/sh				# here /bin/sh becomes mandatory to pass -it, so -it works properly
+/ # 
+/ # exit
+ibtisam@mint-dell:~$ docker ps -a
+CONTAINER ID   IMAGE     COMMAND     CREATED             STATUS                        PORTS     NAMES
+32365ae0d4c4   alpine    "/bin/sh"   About an hour ago   Up 15 minutes                           con2	exit, but running; power of exec
+b4dd6aca6a27   busybox   "sh"        About an hour ago   Exited (137) 16 minutes ago             con1
+ibtisam@mint-dell:~$ 
+
+🚀 -d # docker top
+
+ibtisam@mint-dell:~$ docker run -d -it alpine sh				deattaches, but keep running in background
+45ebc49673a919ba8b7cd939f67d38714bb0eeef6026837fe9bf19e8a8c3b57a
+ibtisam@mint-dell:~$ docker ps -a
+CONTAINER ID   IMAGE     COMMAND   CREATED          STATUS          PORTS     NAMES
+45ebc49673a9   alpine    "sh"      14 seconds ago   Up 11 seconds             festive_buck
+ibtisam@mint-dell:~$ docker top festive_buck
+UID                 PID                 PPID                C                   STIME               TTY                 TIME                CMD
+root                919                 897                 0                   07:10               ?                   00:00:00            sh
+ibtisam@mint-dell:~$
+
+🚀 ubuntu vs alpine size; sh -c
+
+ibtisam@mint-dell:~$ docker images
+REPOSITORY                       TAG                  IMAGE ID       CREATED         SIZE
+ubuntu                           latest               edbfe74c41f8   7 weeks ago     78.1MB
+alpine                           latest               324bc02ae123   2 months ago    7.8MB
+ibtisam@mint-dell:~$ time docker run --rm ubuntu sh -c "apt update && apt install curl"
+real	1m3.703s
+user	0m0.105s
+sys	0m0.084s
+ibtisam@mint-dell:~$ time docker run --rm alpine sh -c "apk update && apk add curl"
+real	0m17.850s
+user	0m0.076s
+sys	0m0.059s
+ibtisam@mint-dell:~$ 
+
+🚀 COMMAND				docker run [OPTIONS] IMAGE [COMMAND] [ARG...]
+
+ibtisam@mint-dell:~$ docker ps -a
+CONTAINER ID   IMAGE     COMMAND   CREATED          STATUS                      PORTS     NAMES
+ec9cf44637a8   alpine    "ls"      15 seconds ago   Exited (0) 11 seconds ago             hardcore_kowalevski
+ibtisam@mint-dell:~$ docker run alpine /bin/sh
+ibtisam@mint-dell:~$ docker run alpine echo $(uname -a)
+Linux mint-dell 6.8.0-45-generic #45-Ubuntu SMP PREEMPT_DYNAMIC Fri Aug 30 12:02:04 UTC 2024 x86_64 x86_64 x86_64 GNU/Linux
+ibtisam@mint-dell:~$ docker ps -a
+CONTAINER ID   IMAGE     COMMAND                  CREATED              STATUS                          PORTS     NAMES
+d7825dfab906   alpine    "echo Linux mint-del…"   22 seconds ago       Exited (0) 19 seconds ago                 keen_napier
+1e10bb92c50e   alpine    "/bin/sh"                About a minute ago   Exited (0) About a minute ago             amazing_gagarin
+ec9cf44637a8   alpine    "ls"                     3 minutes ago        Exited (0) 3 minutes ago                  hardcore_kowalevski
+ibtisam@mint-dell:~$ docker run alpine uname -a
+Linux 818e2ae5f2bf 6.6.32-linuxkit #1 SMP PREEMPT_DYNAMIC Thu Jun 13 14:14:43 UTC 2024 x86_64 Linux
+ibtisam@mint-dell:~$ docker ps -a
+CONTAINER ID   IMAGE     COMMAND                  CREATED          STATUS                      PORTS     NAMES
+818e2ae5f2bf   alpine    "uname -a"               14 seconds ago   Exited (0) 10 seconds ago             thirsty_lamarr
+d7825dfab906   alpine    "echo Linux mint-del…"   2 minutes ago    Exited (0) 2 minutes ago              keen_napier
+1e10bb92c50e   alpine    "/bin/sh"                2 minutes ago    Exited (0) 2 minutes ago              amazing_gagarin
+ec9cf44637a8   alpine    "ls"                     5 minutes ago    Exited (0) 5 minutes ago              hardcore_kowalevski
+ibtisam@mint-dell:~$ docker run alpine cat /etc/os-release
+NAME="Alpine Linux"
+ID=alpine
+VERSION_ID=3.20.2
+PRETTY_NAME="Alpine Linux v3.20"
+HOME_URL="https://alpinelinux.org/"
+BUG_REPORT_URL="https://gitlab.alpinelinux.org/alpine/aports/-/issues"
+ibtisam@mint-dell:~$ docker ps -a
+CONTAINER ID   IMAGE     COMMAND                  CREATED              STATUS                          PORTS     NAMES
+9866785f6592   alpine    "cat /etc/os-release"    27 seconds ago       Exited (0) 23 seconds ago                 gallant_gauss
+818e2ae5f2bf   alpine    "uname -a"               About a minute ago   Exited (0) About a minute ago             thirsty_lamarr
+d7825dfab906   alpine    "echo Linux mint-del…"   3 minutes ago        Exited (0) 3 minutes ago                  keen_napier
+1e10bb92c50e   alpine    "/bin/sh"                4 minutes ago        Exited (0) 4 minutes ago                  amazing_gagarin
+ec9cf44637a8   alpine    "ls"                     7 minutes ago        Exited (0) 7 minutes ago                  hardcore_kowalevski
+ibtisam@mint-dell:~$ 
+
+🚀 docker start vs docker start --attach
+
+ibtisam@mint-dell:~$ docker run --name hello hello-world
+
+Hello from Docker!
+
+To try something more ambitious, you can run an Ubuntu container with:
+ $ docker run -it ubuntu bash
+
+ibtisam@mint-dell:~$ docker attach hello
+You cannot attach to a stopped container, start it first
+ibtisam@mint-dell:~$ docker start hello					only starts the container
+hello
+ibtisam@mint-dell:~$ docker start --attach hello			not only starts the container, but also prints the message
+
+Hello from Docker!
+
+To try something more ambitious, you can run an Ubuntu container with:
+ $ docker run -it ubuntu bash
+
+ibtisam@mint-dell:~$ 
+
+🚀 bash vs sh vs /bin/bash vs /bin/sh
+
+ibtisam@mint-dell:~$ docker run -it ubuntu bash
+root@af97289d2e3d:/# ls
+bin  boot  dev  etc  home  lib  lib64  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+root@af97289d2e3d:/# exit
+exit
+ibtisam@mint-dell:~$ docker run -it ubuntu sh
+# ls
+bin  boot  dev	etc  home  lib	lib64  media  mnt  opt	proc  root  run  sbin  srv  sys  tmp  usr  var
+# exit
+ibtisam@mint-dell:~$ docker run -it ubuntu /bin/bash
+root@48a3b483e539:/# whoami
+root
+root@48a3b483e539:/# exit
+exit
+
+ibtisam@mint-dell:~$ docker run -it ubuntu /bin/sh
+# whoami
+root
+# exit
+ibtisam@mint-dell:~$
+
+🚀 ubuntu image based container
+
+The issue is that your container abc keeps exiting immediately after starting. This happens because the container's default command (/bin/bash) is completing and exiting, leaving the container in a stopped state.
+
+Run a new Ubuntu container with interactive and terminal flags:
+
+docker run -it --name abc ubuntu /bin/bash
+
+This will start the container, and you'll be inside an interactive Bash shell.
+
+ibtisam@mint-dell:~$ docker run -d -it --name abc ubuntu bash
+167b14d4409b73a6b85b0f92316cf1a96289e7c96ba90987a7978843b783e03c
+ibtisam@mint-dell:~$ docker start --attach abc
+^Ccontext canceled
+ibtisam@mint-dell:~$ docker start abc
+abc
+ibtisam@mint-dell:~$ docker exec -it abc /bin/bash
+root@167b14d4409b:/# exit
+exit
+ibtisam@mint-dell:~$ 
+
+🚀 docker status
+
+ibtisam@mint-dell:~$ systemctl status docker
+● docker.service - Docker Application Container Engine
+     Loaded: loaded (/usr/lib/systemd/system/docker.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2024-09-22 22:10:36 PKT; 1 day 17h ago
+TriggeredBy: ● docker.socket
+
+ibtisam@mint-dell:~$ ls /var/run/docker.sock
+/var/run/docker.sock
+
+ibtisam@mint-dell:~$ systemctl status docker.socket
+● docker.socket - Docker Socket for the API
+     Loaded: loaded (/usr/lib/systemd/system/docker.socket; enabled; preset: enabled)
+     Active: active (running) since Sun 2024-09-22 22:09:01 PKT; 1 day 17h ago
+   Triggers: ● docker.service
+
+ibtisam@mint-dell:~$ systemctl status docker
+● docker.service - Docker Application Container Engine
+     Loaded: loaded (/usr/lib/systemd/system/docker.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2024-09-22 22:10:36 PKT; 1 day 17h ago
+TriggeredBy: ● docker.socket
+       
+🚀 port mapping
+
+ibtisam@mint-dell:~$ docker run -d -it --name abc -p 8080:80 nginx
+d0984c3a7b1947a2bfa49a30766b62e623a69da1cabfc99d93c3bddb784348c3
+ibtisam@mint-dell:~$ curl http://localhost:8080
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+</body>
+</html>
+                          
+ibtisam@mint-dell:~$ netstat -tulpn | grep 8080
+tcp6       0      0 :::8080                 :::*                    LISTEN      -                   
+ibtisam@mint-dell:~$ 
+
+🚀 lec-10
+
+ibtisam@mint-dell:~/dockr/lec-10$ ls -a
+.  ..  Dockerfile  .dockerignore  package.json  src
+
+ibtisam@mint-dell:~/dockr/lec-10$ cat Dockerfile 
+FROM node:alpine
+ARG PORT=8000
+ENV PORT=$PORT
+WORKDIR /app
+COPY . .
+EXPOSE $PORT
+RUN npm install
+CMD npm start
+
+ibtisam@mint-dell:~/dockr/lec-10$ docker build -t node-img .
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/x9lsp89ffkf0tvi0ub58o113g
+
+ 
+ibtisam@mint-dell:~/dockr/lec-10$ docker run -d -it --name node1 -p 4040:8000 node-img
+28b99a95345eb5b558b97fc32fc62d85568ffa22be6c466e6c81d7b738ea21aa
+ibtisam@mint-dell:~/dockr/lec-10$ curl http://localhost:4040
+Hello ibtisam, my sweetheartibtisam@mint-dell:~/dockr/lec-10$ 
+ibtisam@mint-dell:~/dockr/lec-10$ docker logs node1
+
+> Ibtisam my sweetheart@1.0.0 start
+> nodemon src/index.js
+
+[nodemon] 2.0.22
+[nodemon] to restart at any time, enter `rs`
+[nodemon] watching path(s): *.*
+[nodemon] watching extensions: js,mjs,json
+[nodemon] starting `node src/index.js`
+Example app listening at http://localhost:8000
+ibtisam@mint-dell:~/dockr/lec-10$ docker exec -it node1 /bin/sh
+/app # ls
+node_modules       package-lock.json  package.json       src
+/app # npm -v
+10.8.3
+/app # node -v
+v22.9.0
+/app # exit
+
+ibtisam@mint-dell:~/dockr/lec-10$ docker run -d -it --name node2 -p 4050:8080 -e PORT=8080 node-img
+2b3190fc015b0e0246f9b1e345e128ef2c83629664cc8fa8cd84ec89e94416fd
+ibtisam@mint-dell:~/dockr/lec-10$ curl http://localhost:4050
+Hello ibtisam, my sweetheartibtisam@mint-dell:~/dockr/lec-10$ 
+ibtisam@mint-dell:~/dockr/lec-10$ docker inspect node2
+
+ibtisam@mint-dell:~/dockr/lec-10$ docker ps
+CONTAINER ID   IMAGE      COMMAND                  CREATED          STATUS          PORTS                              NAMES
+2b3190fc015b   node-img   "docker-entrypoint.s…"   50 minutes ago   Up 50 minutes   8000/tcp, 0.0.0.0:4050->8080/tcp   node2
+28b99a95345e   node-img   "docker-entrypoint.s…"   54 minutes ago   Up 54 minutes   0.0.0.0:4040->8000/tcp             node1
+
+🚀 lec-12 q2
+
+ibtisam@mint-dell:~/dockr/lec-12/q2$ ls
+Dockerimage  package.json  server.js
+ibtisam@mint-dell:~/dockr/lec-12/q2$ docker build -t server.js .
+[+] Building 0.9s (1/1) FINISHED                                                                                                                    ERROR: failed to solve: failed to read dockerfile: open Dockerfile: no such file or directory
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/7y8plogepyj7c0gy2rcwxegt3
+ibtisam@mint-dell:~/dockr/lec-12/q2$ ls
+Dockerimage  package.json  server.js
+ibtisam@mint-dell:~/dockr/lec-12/q2$ cat Dockerimage 
+FROM node:alpine
+WORKDIR /usr/src/app
+COPY . .
+RUN npm install
+EXPOSE 8080
+CMD [ "node", "server.js" ]ibtisam@mint-dell:~/dockr/lec-12/q2$ 
+ibtisam@mint-dell:~/dockr/lec-12/q2$ docker build -t server.js .
+[+] Building 31.3s (10/10) FINISHED                                                                                                                 
+ibtisam@mint-dell:~/dockr/lec-12/q2$ ls -a
+.  ..  Dockerfile  .dockerignore  package.json  server.js
+ibtisam@mint-dell:~/dockr/lec-12/q2$ docker run -it -d --name server1 -p 7070:8080 server.js
+43272288eabfdf101ca3ca2044722d08787db84ab0c0342cc9450dee765c62ae
+ibtisam@mint-dell:~/dockr/lec-12/q2$ curl http://localhost:7070
+Hello sweetheart, my ibtisamibtisam@mint-dell:~/dockr/lec-12/q2$ docker logs server1
+Running on http://0.0.0.0:8080
+ibtisam@mint-dell:~/dockr/lec-12/q2$ docker exec -it server1 /bin/sh
+/usr/src/app # ls
+node_modules       package-lock.json  package.json       server.js
+/usr/src/app # 
+
+🚀 lec-12 q3
+
+ibtisam@mint-dell:~/dockr/lec-12/q2$ docker run --rm --name nginx -d -p 8000:127.0.0.1:8081/tcp nginx
+docker: invalid IP address: 8000.
+See 'docker run --help'.
+ibtisam@mint-dell:~/dockr/lec-12/q2$ docker run --rm --name nginx -d -p 127.0.0.1:80:8081/tcp nginx
+54cabfb49d378f8da6750d124cc300a829ddac8ce3e70b6288eaa79dddb52fb4
+ibtisam@mint-dell:~/dockr/lec-12/q2$ curl http://localhost:80
+curl: (52) Empty reply from server
+ibtisam@mint-dell:~/dockr/lec-12/q2$ docker port nginx
+8081/tcp -> 127.0.0.1:80
+ibtisam@mint-dell:~/dockr/lec-12/q2$ 
+
+🚀 Docker volume path in base machine (docker area)
+
+ibtisam@mint-dell:~/dockr/lec-12/q2$ sudo ls /var/lib/docker/image/overlay2/imagedb/metadata/sha256
+ibtisam@mint-dell:~/dockr/lec-12/q2$ sudo ls /var/lib/docker/image/overlay2/imagedb/content/sha256
+129dd9f673673e9e8507ac837dcd9eaa3906469c10ef4aa63d0cac1f1dfa6b3a  49643eaa8fffd3f2efbe16c22eba6662b5df4ad55a5cf35ea079d4429673c760
+ibtisam@mint-dell:~/dockr/lec-12/q2$ docker images --no-trunc
+REPOSITORY                       TAG                  IMAGE ID                                                                  CREATED         SIZE
+server.js                        latest               sha256:b3f0f31c7439ab12e9e31fb20a075e3020031a61ab332c3860093aeec52cacd7   3 hours ago     160MB
+node-img                         latest               sha256:ab84540a839a7764759bd0a9d611cda579c0fae4ce9616a650da35b36f79cd7d   4 hours ago     164MB
+node-img3                        latest               sha256:78b785962605fe5e87f4e6515af0d61d7b0cb5ea12fb60d10d66f396c35765f9   6 hours ago     164MB
+bash                             latest               sha256:91698992478c66011fc925293008447d42903e2eada741689c7d96f22a5d2a1b   37 hours ago    14.4MB
+myubuntu                         v1                   sha256:dcc67a5e34471f90bc9b8fe1fc1bfe7e05d45ac933da122466cd6dd3c9107289   4 days ago      993MB
+python                           latest               sha256:ea2ebd905ab246ece277be25520ca0cfe82758b3d2b369e2fd69b374c1d6c7fa   2 weeks ago     1.01GB
+python                           alpine               sha256:6b6778b6dd42ae9e4d2cda76e59cba004d64808d2fea220c3074e1e4ab467810   2 weeks ago     46.8MB
+jenkins/jenkins                  latest               sha256:fd13cb1b731505dd9231d290ab9688bb33961b8f5cb7d9acbb3375c43aa0764c   4 weeks ago     471MB
+ubuntu/apache2                   latest               sha256:e74a41ebfecfc482123032675228e5ce5c29590447dd78532351648d766ce32a   5 weeks ago     191MB
+ubuntu                           latest               sha256:edbfe74c41f8a3501ce542e137cf28ea04dd03e6df8c9d66519b6ad761c2598a   7 weeks ago     78.1MB
+alpine                           latest               sha256:324bc02ae1231fd9255658c128086395d3fa0aedd5a41ab6b034fd649d1a9260   2 months ago    7.8MB
+nginx                            latest               sha256:900dca2a61f5799aabe662339a940cf444dfd39777648ca6a953f82b685997ed   3 months ago    188MB
+kindest/node                     <none>               sha256:9319cf209ac58c5f091c9cb183fdd8784e753cfb5b1b3cb6692b26abd8d4efac   4 months ago    974MB
+gcr.io/k8s-minikube/kicbase      v0.0.44              sha256:5a6e59a9bdc0d32876fd51e3702c6cb16f38b145ed5528e5f0bfb1de21e70803   4 months ago    1.26GB
+kindest/haproxy                  v20230606-42a2262b   sha256:91485233244656d9d093529f97e69c04836ee3b02d3e58f166df9941a122dc16   15 months ago   17.6MB
+busybox                          latest               sha256:65ad0d468eb1c558bf7f4e64e790f586e9eda649ee9f130cd0e835b292bbc5ac   16 months ago   4.26MB
+hello-world                      latest               sha256:d2c94e258dcb3c5ac2798d32e1249e42ef01cba4841c2234249495f87264ac5a   17 months ago   13.3kB
+blueedge/win11react              latest               sha256:3962edd901c475987f14cd10e77e79a1d89c5070c4dd05ffa42ceec9e88f6354   2 years ago     156MB
+linuxacademycontent/ckad-nginx   1.0.0                sha256:4f7ca0526083fcd36ca9070e18daddec077ec420b069c6703a1d628c5475c722   2 years ago     133MB
+linuxacademycontent/ckad-nginx   green                sha256:7d556b71972d9ec5605532b0a49fd6a08b0a517f8ce00272803a3e744e416bd4   2 years ago     133MB
+linuxacademycontent/ckad-nginx   blue                 sha256:079aece5e6b201221d614061e234ff302db85c46633c60b54ff6b01288f16254   2 years ago     133MB
+kodekloud/webapp-conntest        latest               sha256:4d20286cbe6802f80d8547f15dcf8b8b7dc78a16de81ad04ecfd410f291ecc65   5 years ago     180MB
+
+ibtisam@mint-dell:~/dockr/lec-12/q2$ sudo ls /var/lib/docker/image/overlay2/imagedb/content/sha256/129dd9f673673e9e8507ac837dcd9eaa3906469c10ef4aa63d0cac1f1dfa6b3a
+/var/lib/docker/image/overlay2/imagedb/content/sha256/129dd9f673673e9e8507ac837dcd9eaa3906469c10ef4aa63d0cac1f1dfa6b3a
+ibtisam@mint-dell:~/dockr/lec-12/q2$ sudo cat /var/lib/docker/image/overlay2/imagedb/content/sha256/129dd9f673673e9e8507ac837dcd9eaa3906469c10ef4aa63d0cac1f1dfa6b3a
+
+root@mint-dell:/var/lib/docker# ls -l
+total 44
+drwx--x--x  4 root root 4096 Aug 10 01:24 buildkit
+drwx--x---  2 root root 4096 Aug 10 01:24 containers
+-rw-------  1 root root   36 Aug 10 01:24 engine-id
+drwx------  3 root root 4096 Aug 10 01:24 image
+drwxr-x---  3 root root 4096 Aug 10 01:24 network
+drwx--x--- 15 root root 4096 Sep 22 22:10 overlay2
+drwx------  4 root root 4096 Aug 10 01:24 plugins
+drwx------  2 root root 4096 Sep 22 22:10 runtimes
+drwx------  2 root root 4096 Aug 10 01:24 swarm
+drwx------  2 root root 4096 Sep 25 15:47 tmp
+drwx-----x  2 root root 4096 Sep 22 22:10 volumes
+
+🚀 Volume
+
+ibtisam@mint-dell:~/dockr/lec-14$ docker volume create my-vol
+my-vol
+ibtisam@mint-dell:~/dockr/lec-14$ docker volume ls
+DRIVER    VOLUME NAME
+local     23ccbf365d5a3b719c19cb9c546a106fc664e3361fd4a2073aa94e739791702d
+local     29306faab619f8dd6bf8f5234a6e2db9e4810a064fac4315ad16558abf6d7d21
+local     a2a6839241b4b0d4eae76e8dc4d8c9e4cfb3eb3467632340a3c8b93a004c7bc9
+local     a53596c4f1273128b0df3f11771075f00e61a2fa55b54030f2b95bffd39fe35f
+local     b8c43804f69017544b8e62e3527fad4b6ac4602fa90c0f0a05204851ebe94d9a
+local     c10dd2a119f81d12dc0290f36f9c849e15310bd7df35592e3872d21eebffdb71
+local     my-vol
+ibtisam@mint-dell:~/dockr/lec-14$ docker inspect my-vol
+[
+    {
+        "CreatedAt": "2024-09-25T12:59:24Z",
+        "Driver": "local",
+        "Labels": null,
+        "Mountpoint": "/var/lib/docker/volumes/my-vol/_data",
+        "Name": "my-vol",
+        "Options": null,
+        "Scope": "local"
+    }
+]
+ibtisam@mint-dell:~/dockr/lec-14$ docker run -it -d --name con1 -v my-vol:/vol-1 alpine
+98f9b2abe1fdcc757e27622384ed9cee62e15fbf92e59e978c9073570215947a
+ibtisam@mint-dell:~/dockr/lec-14$ docker exec -it con1 /bin/sh
+/ # cd vol-1
+/vol-1 # echo "this is from con1, vol-1" > file1
+/vol-1 # exit
+ibtisam@mint-dell:~/dockr/lec-14$ docker inspect my-vol
+"Mounts": [
+            {
+                "Type": "volume",
+                "Name": "my-vol",
+                "Source": "/var/lib/docker/volumes/my-vol/_data",
+                "Destination": "/vol-1",
+                "Driver": "local",
+                "Mode": "z",
+                "RW": true,
+                "Propagation": ""
+            }
+
+ibtisam@mint-dell:~/dockr/lec-14$ sudo ls /var/lib/docker/volumes/my-vol/_data
+ls: cannot access '/var/lib/docker/volumes/my-vol/_data': No such file or directory
+
+ibtisam@mint-dell:~/dockr/lec-14$ docker run -it -d --name con2 --mount src=my-vol,dst=/vol-2 alpine
+89691dd190b7411c98307675c7d64999b94e3b8ca358a7f9794b1e5eef545720
+ibtisam@mint-dell:~/dockr/lec-14$ docker exec -it con2 /bin/sh
+/ # ls
+bin    dev    etc    home   lib    media  mnt    opt    proc   root   run    sbin   srv    sys    tmp    usr    var    vol-2
+/ # cd vol-2/
+/vol-2 # echo "this is from vol-2 con2" > file2.txt
+/vol-2 # ls
+file1      file2.txt
+/vol-2 # mv file1 file1.txt
+/vol-2 # ls
+file1.txt  file2.txt
+
+ibtisam@mint-dell:~/dockr/lec-14$ sudo ls /var/lib/docker/volumes/my-vol
+ls: cannot access '/var/lib/docker/volumes/my-vol': No such file or directory
+
+
+ibtisam@mint-dell:~/dockr/lec-14$ docker inspect con2
+        "Mounts": [
+            {
+                "Type": "volume",
+                "Name": "my-vol",
+                "Source": "/var/lib/docker/volumes/my-vol/_data",
+                "Destination": "/vol-2",
+                "Driver": "local",
+                "Mode": "z",
+                "RW": true,
+                "Propagation": ""
+         
+ibtisam@mint-dell:~/dockr/lec-14$ docker run -it --rm --mount source=my-vol,target=/vol alpine /bin/sh
+/ # cd vol/
+/vol # cat file1.txt 
+this is from con1, vol-1
+/vol # cat file2.txt 
+this is from vol-2 con2
+/vol # 
+
+🚀 docker bind
+
+ibtisam@mint-dell:~/dockr$ mkdir bind
+ibtisam@mint-dell:~/dockr$ cd bind
+ibtisam@mint-dell:~/dockr/bind$ pwd
+/home/ibtisam/dockr/bind
+ibtisam@mint-dell:~/dockr/bind$ echo "this is from local host" > localhost.txt 
+ibtisam@mint-dell:~/dockr/bind$ cat localhost.txt 
+this is from local host
+ibtisam@mint-dell:~/dockr/bind$ 
+
+ibtisam@mint-dell:~/dockr/lec-14$ docker run -it -d --name bind1 --mount type=bind,src=/home/ibtisam/dockr/bind,dst=/bind1 alpine
+df10edeb6c1c4cc21eac0d257ba1a2b7637f591c33f0d42c2297fd7cf5e2103a
+ibtisam@mint-dell:~/dockr/lec-14$ docker inspect bind1
+        "Mounts": [
+            {
+                "Type": "bind",
+                "Source": "/home/ibtisam/dockr/bind",
+                "Destination": "/bind1",
+      
+                            "IPAddress": "172.17.0.2",
+  
+ibtisam@mint-dell:~/dockr/lec-14$ docker exec -it bind1 /bin/sh
+/ # ls
+bin    bind1  dev    etc    home   lib    media  mnt    opt    proc   root   run    sbin   srv    sys    tmp    usr    var
+/ # cd bind1
+/bind1 # ls
+localhost.txt
+/bind1 # echo "this is from bind1 container" > bind1.txt
+/bind1 # ping 172.17.0.2
+PING 172.17.0.2 (172.17.0.2): 56 data bytes
+64 bytes from 172.17.0.2: seq=0 ttl=64 time=0.277 ms
+64 bytes from 172.17.0.2: seq=1 ttl=64 time=0.160 ms
+64 bytes from 172.17.0.2: seq=2 ttl=64 time=0.226 ms
+64 bytes from 172.17.0.2: seq=3 ttl=64 time=0.151 ms
+^C
+--- 172.17.0.2 ping statistics ---
+4 packets transmitted, 4 packets received, 0% packet loss
+round-trip min/avg/max = 0.139/0.176/0.277 ms
+/bind1 # exit
+
+ibtisam@mint-dell:~/dockr/lec-14$ ls /home/ibtisam/dockr/bind/
+bind1.txt  localhost.txt
+ibtisam@mint-dell:~/dockr/lec-14$ 
+
+ibtisam@mint-dell:~/dockr/lec-14$ docker run -it -d --name web1 -p 7666:80 -v /home/ibtisam/dockr/healet-html:/usr/share/nginx/html/ nginx
+1e11c74d7321a07788efadc968a817c977c1100d4321b662e94e2982b3b57350
+ibtisam@mint-dell:~/dockr/lec-14$ docker inspect web1
+"Mounts": [
+            {
+                "Type": "bind",
+                "Source": "/host_mnt/home/ibtisam/dockr/healet-html",
+                "Destination": "/usr/share/nginx/html",
+ibtisam@mint-dell:~/dockr/lec-10$ pwd
+/home/ibtisam/dockr/lec-10
+ibtisam@mint-dell:~/dockr/lec-10$ docker build -t v-node .
+
+ibtisam@mint-dell:~/dockr/lec-10$ docker run -it -d -p 6500:8000 --mount type=bind,src=/home/ibtisam/dockr/lec-10/src,dst=/app/src v-node
+51db5631a19b450d835cf2b4df374c40d457199d84a1b4685a53ce3357ba60ae
+ibtisam@mint-dell:~/dockr/lec-10$ curl http://localhost:6500
+Hello ibtisam, my sweetheartibtisam@mint-dell:~/dockr/lec-10$ 
+ibtisam@mint-dell:~/dockr/lec-10$ code .
+ibtisam@mint-dell:~/dockr/lec-10$ curl http://localhost:6500
+Hello ibtisam, my loveibtisam@mint-dell:~/dockr/lec-10$ 
+
+🚀 docker multi-stage # lec-16
+
+ibtisam@mint-dell:~/dockr/lec-16$ ls -a
+.  ..  Dockerfile  .dockerignore  package.json  src
+ibtisam@mint-dell:~/dockr/lec-16$ code .
+ibtisam@mint-dell:~/dockr/lec-16$ tree
+.
+├── Dockerfile
+├── package.json
+└── src
+    └── index.js
+
+2 directories, 3 files
+ibtisam@mint-dell:~/dockr/lec-16$ cat Dockerfile 
+FROM node:alpine as abc
+ARG PORT=8000
+ENV PORT=$PORT
+WORKDIR /app
+COPY . .
+EXPOSE $PORT
+RUN npm install --only=prod
+CMD npm run start:prod
+
+FROM abc as xyz
+RUN npm install --only=dev
+CMD npm start
+
+ibtisam@mint-dell:~/dockr/lec-16$ docker build -t node-abc --target abc .
+
+ibtisam@mint-dell:~/dockr/lec-16$ docker build -t node-xyz --target xyz .
+
+ibtisam@mint-dell:~/dockr/lec-16$ docker images | head -n 3
+REPOSITORY                       TAG                  IMAGE ID       CREATED              SIZE
+node-xyz                         latest               c18f62427d39   26 seconds ago       164MB	dev
+node-abc                         latest               2a55acc1fbad   About a minute ago   163MB	prod
+ibtisam@mint-dell:~/dockr/lec-16$ ls
+Dockerfile  package.json  src
+ibtisam@mint-dell:~/dockr/lec-16$ pwd
+/home/ibtisam/dockr/lec-16
+ibtisam@mint-dell:~/dockr/lec-16$ docker run -it -d --name prod -p 8900:8000 --mount type=bind,src=$PWD/src,dst=/app/src node-abc
+1fa99404f07f53ef5ad08f779c0adfb24b26aafbfbc3e0e4002c042aa56e6aac
+ibtisam@mint-dell:~/dockr/lec-16$ curl http://localhost:8900
+Hello ibtisam, my loveibtisam@mint-dell:~/dockr/lec-16$ curl http://localhost:8900
+Hello ibtisam, my loveibtisam@mint-dell:~/dockr/lec-16$ Change not shown, because it’s prod, nodemon dependencies not installed
+ibtisam@mint-dell:~/dockr/lec-16$ docker run -it -d --name dev -p 8910:8000 --mount type=bind,src=$PWD/src,dst=/app/src node-xyz
+8d67d5e9f35a87e36260a7bba15dd7dc127777ca518031cc85c4e22ce32dcf1d
+ibtisam@mint-dell:~/dockr/lec-16$ curl http://localhost:8910
+Hello sweetheartibtisam@mint-dell:~/dockr/lec-16$ Change reflected as it’s dev, nodemon dependencies are installed.
+
+🚀 docker compose # lec-17
+
+MY_ENV=prod
+docker build -t node:$prod --target $prod .
+ibtisam@mint-dell:~/dockr/lec-16$ MY_ENV=abc
+ibtisam@mint-dell:~/dockr/lec-16$ docker build -t node:$MY_ENV --target $MY_ENV .
+
+ibtisam@mint-dell:~/dockr/lec-16$ MY_PORT=8001
+ibtisam@mint-dell:~/dockr/lec-16$ docker run -it -d --name con1 -e PORT=$MY_PORT -p 7600:$MY_PORT --mount type=bind,src=$PWD/src,dst=/app/src node:$MY_ENV
+0f9d0ccc6a47150525992210190edf05c6de8c8bd1937cf83c5525a94367d49f
+ibtisam@mint-dell:~/dockr/lec-16$ curl http://localhost:7600
+Hello sweetheartibtisam@mint-dell:~/dockr/lec-16$ cat Dockerfile 
+FROM node:alpine as abc
+ARG PORT=8000
+ENV PORT=$PORT
+WORKDIR /app
+COPY . .
+EXPOSE $PORT
+RUN npm install --only=prod
+CMD npm run start:prod
+
+FROM abc as xyz
+RUN npm install --only=dev
+CMD npm start
+
+ibtisam@mint-dell:~/dockr/lec-16$ MY_PORT=8002
+ibtisam@mint-dell:~/dockr/lec-16$ MY_ENV=xyz
+ibtisam@mint-dell:~/dockr/lec-16$ docker build -t node:$MY_ENV --target $MY_ENV .
+ibtisam@mint-dell:~/dockr/lec-16$ docker run -it -d --name con2 -e PORT=$MY_PORT -p 7700:$MY_PORT --mount type=bind,src=$PWD/src,dst=/app/src node:$MY_ENV
+86de9d1211cc2a933d1bcc3c937726aa4dc03941128733d7d1588bc843f53efc
+ibtisam@mint-dell:~/dockr/lec-16$ curl http://localhost:7700
+Hello sweetheartibtisam@mint-dell:~/dockr/lec-16$ 
+
+Docker Compose is a tool for defining and running multi-container Docker applications. It allows you to manage a group of services (containers) together using a YAML file (docker-compose.yml).
+
+ibtisam@mint-dell:~/dockr/lec-17$ docker-compose
+Command 'docker-compose' not found, but can be installed with:
+sudo apt install docker-compose
+ibtisam@mint-dell:~/dockr/lec-17$ docker compose version
+Docker Compose version v2.28.1-desktop.1
+ibtisam@mint-dell:~/dockr/lec-17$ ls -a
+.  ..  Dockerfile  .dockerignore  package.json  src
+ibtisam@mint-dell:~/dockr/lec-17$ 
+
+ibtisam@mint-dell:~/dockr/lec-17$ code .
+ibtisam@mint-dell:~/dockr/lec-17$ touch docker-compose.yml
+ibtisam@mint-dell:~/dockr/lec-17$ touch .env
+ibtisam@mint-dell:~/dockr/lec-17$ docker images | head -n 3
+REPOSITORY                       TAG                  IMAGE ID       CREATED             SIZE
+node                             xyz                  b229c0c20c6f   About an hour ago   164MB
+node                             abc                  33b8a107264f   2 hours ago         163MB
+ibtisam@mint-dell:~/dockr/lec-17$ pwd
+/home/ibtisam/dockr/lec-17
+ibtisam@mint-dell:~/dockr/lec-17$ docker compose up -d
+ibtisam@mint-dell:~/dockr/lec-17$ docker compose ps -a
+WARN[0000] /home/ibtisam/dockr/lec-17/docker-compose.yml: `version` is obsolete 
+NAME              IMAGE      COMMAND                  SERVICE   CREATED          STATUS          PORTS
+lec-17-my-app-1   node:xyz   "docker-entrypoint.s…"   my-app    24 seconds ago   Up 20 seconds   8000/tcp, 0.0.0.0:7911->9600/tcp
+ibtisam@mint-dell:~/dockr/lec-17$ docker ps -a
+CONTAINER ID   IMAGE      COMMAND                  CREATED          STATUS          PORTS                              NAMES
+c34738609434   node:xyz   "docker-entrypoint.s…"   11 minutes ago   Up 11 minutes   8000/tcp, 0.0.0.0:7911->9600/tcp   lec-17-my-app-1
+
+ibtisam@mint-dell:~/dockr/lec-17$ curl http:localhost:7911
+curl: (3) URL rejected: Port number was not a decimal number between 0 and 65535
+ibtisam@mint-dell:~/dockr/lec-17$ curl http://localhost:7911
+Hello ibtisam, my loveibtisam@mint-dell:~/dockr/lec-17$ 
+ibtisam@mint-dell:~/dockr/lec-17$ cat docker-compose.yml 
+version: "3.8"
+services:
+  my-app:
+    image: node:$MY_ENV
+    ports:
+      - "7911:$MY_PORT"
+    volumes:
+      - $PWD/src:/app/src
+    environment:
+      - PORT=$MY_PORT
+ibtisam@mint-dell:~/dockr/lec-17$ 
+ibtisam@mint-dell:~/dockr/lec-17$ cat .env 
+MY_ENV=xyz
+MY_PORT=9600ibtisam@mint-dell:~/dockr/lec-17$ 
+
+ibtisam@mint-dell:~/dockr/lec-10$ docker compose ps -a
+no configuration file provided: not found
+ibtisam@mint-dell:~/dockr/lec-10$ docker ps -a
+CONTAINER ID   IMAGE      COMMAND                  CREATED          STATUS          PORTS                              NAMES
+c34738609434   node:xyz   "docker-entrypoint.s…"   10 minutes ago   Up 10 minutes   8000/tcp, 0.0.0.0:7911->9600/tcp   lec-17-my-app-1
+ibtisam@mint-dell:~/dockr/lec-10$ 
+
+🚀 docker compose # lec-17 02
+
+ibtisam@mint-dell:~/dockr/lec-17/02$ pwd
+/home/ibtisam/dockr/lec-17/02
+ibtisam@mint-dell:~/dockr/lec-17/02$ touch docker-compose.yml
+ibtisam@mint-dell:~/dockr/lec-17/02$ echo "this is 50 min onward lecture, code is copied from lec-16;multi-stage" > README.txt
+ibtisam@mint-dell:~/dockr/lec-17/02$ touch .env
+ibtisam@mint-dell:~/dockr/lec-17/02$ vi .env
+ibtisam@mint-dell:~/dockr/lec-17/02$ tree
+.
+├── docker-compose.yml
+├── Dockerfile
+├── package.json
+├── README.txt
+└── src
+    └── index.js
+
+2 directories, 5 files
+ibtisam@mint-dell:~/dockr/lec-17/02$ ls -a
+.  ..  docker-compose.yml  Dockerfile  .env  package.json  README.txt  src
+ibtisam@mint-dell:~/dockr/lec-17/02$ code .
+ibtisam@mint-dell:~/dockr/lec-17/02$ docker compose up -d
+WARN[0000] /home/ibtisam/dockr/lec-17/02/docker-compose.yml: `version` is obsolete 
+[+] Running 2/2
+ ✔ Network 02_default     Created                                                                                                                                   1.1s 
+ ✔ Container 02-my-app-1  Started                                                                                                                                   6.3s 
+ibtisam@mint-dell:~/dockr/lec-17/02$ docker ps
+CONTAINER ID   IMAGE      COMMAND                  CREATED          STATUS          PORTS                              NAMES
+ab5799ba694e   node:xyz   "docker-entrypoint.s…"   21 seconds ago   Up 18 seconds   8000/tcp, 0.0.0.0:7911->6665/tcp   02-my-app-1
+ibtisam@mint-dell:~/dockr/lec-17/02$ docker compose ps -a
+WARN[0000] /home/ibtisam/dockr/lec-17/02/docker-compose.yml: `version` is obsolete 
+NAME          IMAGE      COMMAND                  SERVICE   CREATED          STATUS          PORTS
+02-my-app-1   node:xyz   "docker-entrypoint.s…"   my-app    59 seconds ago   Up 55 seconds   8000/tcp, 0.0.0.0:7911->6665/tcp
+ibtisam@mint-dell:~/dockr/lec-17/02$ pwd
+/home/ibtisam/dockr/lec-17/02
+ibtisam@mint-dell:~/dockr/lec-17/02$ ls -a
+.  ..  docker-compose.yml  Dockerfile  .env  package.json  README.txt  src
+ibtisam@mint-dell:~/dockr/lec-17/02$ cat docker-compose.yml 
+version: "3.8"
+services:
+  my-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: $MY_ENV
+    image: node:$MY_ENV
+    ports:
+      - "7911:$MY_PORT"
+    volumes:
+      - $PWD/src:/app/src
+    environment:
+      - PORT=$MY_PORTibtisam@mint-dell:~/dockr/lec-17/02$ cat Dockerfile 
+FROM node:alpine as abc
+ARG PORT=8000
+ENV PORT=$PORT
+WORKDIR /app
+COPY . .
+EXPOSE $PORT
+RUN npm install --only=prod
+CMD npm run start:prod
+
+FROM abc as xyz
+RUN npm install --only=dev
+CMD npm start
+
+ibtisam@mint-dell:~/dockr/lec-17/02$ cat .env 
+MY_ENV=xyz
+MY_PORT=6665
+
+ibtisam@mint-dell:~/dockr/lec-17/02$ curl http://localhost:7911
+Hello sweetheart ibtisam@mint-dell:~/dockr/lec-17/02$ 
+
+🚀 docker data container # lec-18
+
+ibtisam@mint-dell:~/dockr$ docker create -v /dbdata --name lec-18 postgres:13-alpine /bin/true
+Unable to find image 'postgres:13-alpine' locally
+f5e9ee9ea7ab8b5ae5a32a5997453a556f38ab4b3e11713f74a8c4cde5078fd7
+ibtisam@mint-dell:~/dockr$ docker ps -a
+CONTAINER ID   IMAGE                COMMAND                  CREATED          STATUS          PORTS                              NAMES
+f5e9ee9ea7ab   postgres:13-alpine   "docker-entrypoint.s…"   34 seconds ago   Created                                            lec-18
+ab5799ba694e   node:xyz             "docker-entrypoint.s…"   33 minutes ago   Up 33 minutes   8000/tcp, 0.0.0.0:7911->6665/tcp   02-my-app-1
+ibtisam@mint-dell:~/dockr$ docker run -d -it --name db1 --volumes-from lec-18 postgres:13-alpine /bin/sh
+f0fcf7d68aec5cde76db08561d86233c098e51b0fdc60fd25c40039f3a7fde30
+ibtisam@mint-dell:~/dockr$ docker exec -it db1 /bin/sh
+/ # ls
+bin                         etc                         mnt                         run                         tmp
+dbdata                      home                        opt                         sbin                        usr
+dev                         lib                         proc                        srv                         var
+docker-entrypoint-initdb.d  media                       root                        sys
+/ # cd dbdata
+/dbdata # echo "this is form db1" > db1.txt
+/dbdata # exit
+
+ibtisam@mint-dell:~/dockr$ docker run -d -it --name db2 --volumes-from lec-18 postgres:13-alpine /bin/sh
+45722e8e5792f375ebac03bbade775faf4ffbffe3fbe5cef659f137b88d08e39
+ibtisam@mint-dell:~/dockr$ docker exec -it db2 /bin/sh
+/ # ls
+bin                         etc                         mnt                         run                         tmp
+dbdata                      home                        opt                         sbin                        usr
+dev                         lib                         proc                        srv                         var
+docker-entrypoint-initdb.d  media                       root                        sys
+/ # cd dbdata/
+/dbdata # ls
+db1.txt
+/dbdata # cat db1.txt 
+this is form db1
+/dbdata # exit
+
+🚀 ENTRYPOINT is overridden
+
+ibtisam@mint-dell:~/k8s/10-1$ docker run --name abc --entrypoint echo nginx ibtisam
+ibtisam
+ibtisam@mint-dell:~/k8s/10-1$ docker ps -a
+CONTAINER ID   IMAGE                                COMMAND                  CREATED         STATUS                      PORTS                       NAMES
+2c7b3af3c693   nginx                                "echo ibtisam"           2 minutes ago   Exited (0) 33 seconds ago                               abc
+780fe8d1ebcf   kindest/haproxy:v20230606-42a2262b   "haproxy -W -db -f /…"   44 hours ago    Up 35 hours                 127.0.0.1:43807->6443/tcp   ibtisam-external-load-balancer
+bdc84c1e7915   kindest/node:v1.30.0                 "/usr/local/bin/entr…"   44 hours ago    Up 44 hours                 127.0.0.1:35593->6443/tcp   ibtisam-control-plane
+5ef0deb05713   kindest/node:v1.30.0                 "/usr/local/bin/entr…"   44 hours ago    Up 44 hours                 127.0.0.1:39271->6443/tcp   ibtisam-control-plane2
+2a28a4fdaef1   kindest/node:v1.30.0                 "/usr/local/bin/entr…"   44 hours ago    Up 44 hours                                             ibtisam-worker2
+8f4c7b74754e   kindest/node:v1.30.0                 "/usr/local/bin/entr…"   44 hours ago    Up 44 hours                                             ibtisam-worker
+ibtisam@mint-dell:~/k8s/10-1$ cat Dockerfile 
+FROM nginx
+RUN echo "this is ibtisam"
+ENTRYPOINT [ "sleep" ]
+CMD [ "10" ]
+
+🚀 10/13/24
+
+ibtisam@mint-dell:~/dockr$ docker run -it -d ubuntu /bin/sh
+3d41cc85b2b8c3aea183df7715cb419ce8d7b177cf0188d4221b9b06d3fbcd92
+
+ibtisam@mint-dell:~/dockr$ docker run -it -d ubuntu
+b6dc11131c2501a741a74dcdc0495c5a14719fcf394af8fc5fdb636982332198
+
+ibtisam@mint-dell:~/dockr$ docker run -it -d alpine
+5b276d0637aa444b93009c5993231d5856f865f57481099fbfc54488eb4d3931
+
+ibtisam@mint-dell:~/dockr$ docker run -it -d busybox
+0a4101ebd6fe118b52eff0fd882bd0c232f84e0e70ddc5319a54ff90e3786f84
+
+ibtisam@mint-dell:~/dockr$ docker ps
+CONTAINER ID   IMAGE                    COMMAND        CREATED          STATUS          PORTS                                                      NAMES
+0a4101ebd6fe   busybox                  "sh"           12 seconds ago   Up 10 seconds                                                              charming_antonelli
+5b276d0637aa   alpine                   "/bin/sh"      36 seconds ago   Up 34 seconds                                                              awesome_lederberg
+b6dc11131c25   ubuntu                   "/bin/bash"    2 minutes ago    Up 2 minutes                                                               recursing_merkle
+3d41cc85b2b8   ubuntu                   "/bin/sh"      3 minutes ago    Up 3 minutes                                                               adoring_williams
+c79c786e1db9   portainer/portainer-ce   "/portainer"   2 hours ago      Up 2 hours      0.0.0.0:8000->8000/tcp, 0.0.0.0:9443->9443/tcp, 9000/tcp   portainer
+ibtisam@mint-dell:~/dockr$ 
+
