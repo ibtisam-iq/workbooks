@@ -23,9 +23,9 @@ This repository reflects my determination to transition from a non-tech backgrou
 
 For additional details on my learning process, see the [reference document](https://docs.google.com/document/d/1Off4JKP9inClZmHrigAjfO3VnLMBmD8K3ebfpvVdy1I/edit?usp=sharing).
 
----
+
 <p align="left">
-<a href="https://linkedin.com/in/ibtisamops" target="blank"><img align="center" src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/linked-in-alt.svg" alt="https://www.linkedin.com/in/ibtisamops" height="30" width="40" /></a>
+<a href="https://linkedin.com/in/ibtisamops" target="blank"><img src="https://img.shields.io/badge/-LinkedIn-%230077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" /></a>
 </p>
 
 **Muhammad Ibtisam**
