@@ -25,7 +25,7 @@ For additional details on my learning process, see the [reference document](http
 
 
 <p align="left">
-<a href="https://linkedin.com/in/ibtisamops" target="blank"><img src="https://img.shields.io/badge/-LinkedIn-%230077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" /></a>
+<a href="https://linkedin.com/in/ibtisam-iq" target="blank"><img src="https://img.shields.io/badge/-LinkedIn-%230077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" /></a>
 </p>
 
 **Muhammad Ibtisam**
